@@ -1,6 +1,4 @@
 const SOURCE_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRwy_RmqgnDQiYnzJDpvQA3t_q1XgJB42L1PrzDj9yLhhoSf899fH51fSnIaWwNNX1qELmyH9I2qQhc/pub?output=csv"
-const MUTE_KEY = "m"
-const FOCUS_KEY = "f"
 
 const csv = require("csvtojson");
 
@@ -39,30 +37,25 @@ function doParse(data) {
 }
 
 function update(content) {
-    console.log("Update");
-    if (null === document.getElementById("city-selector")) {
-        console.log("City Selector");
-        document.getElementById("city").innerHTML = "" +
-            "  <button class=\"btn btn-secondary dropdown-toggle\" type=\"button\" id=\"dropdownMenuButton\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\">\n" +
-            "    Filter By City" +
-            "  </button>\n" +
-            "  <div id=\"city-menu\" class=\"dropdown-menu\" aria-labelledby=\"dropdownMenuButton\"></div></div>"
-        let cities = gather_cities(content);
-        console.log(cities);
-        cities.forEach((city) => {
-            console.log(city);
-            document.getElementById("city-menu").innerHTML += `<a class="dropdown-item" href="#">${city}</a>`
-        });
-    }
-    console.log("After City UI");
+    generate_current_city(content)
+    generate_city_list(content)
+    document.getElementById("content").innerHTML = ""
     content.forEach((row) => {
-        console.log(`Looking at ${row["Source"]}`);
-        publish_row(city_filter(embed_filter(live_filter(woke_filter(row)))));
+        publish_row(filter_city_streams(row));
     });
+}
+
+function filter_city_streams(row) {
+    return city_filter(embed_filter(live_filter(woke_filter(row))))
+}
+
+function filter_online_streams(row) {
+    return embed_filter(live_filter(woke_filter(row)))
 }
 
 function woke_filter(row) {
     if (row) {
+
         if (row["Source"] === "Woke" || row["Source"] === "Submit links:") {
 
         } else {
@@ -84,10 +77,10 @@ function embed_filter(row) {
 }
 
 function city_filter(row) {
-    let city = document.getElementById("city-selection");
+    let city = window.location.hash.substring(1)
     if (row) {
         if (city) {
-            if (row["City"] === city) {
+            if (string_to_slug(row["City"]) === city) {
                 return row
             }
         } else {
@@ -101,14 +94,37 @@ function gather_cities(content) {
     console.log("gather_cities");
     cities = [];
     content.forEach((row) => {
-        cities.push(row["City"])
+        if (filter_online_streams(row)) {
+            cities.push(row["City"])
+        }
     });
     return new Set(cities)
 }
 
+function generate_current_city(content) {
+    let city_empty = true
+    content.forEach((row) => {
+        if (window.location.hash.substring(1) === string_to_slug(row["City"])) {
+            document.getElementById('current-city').innerHTML = `Current City Filter: ${row["City"]}`
+            city_empty = false
+        }
+
+    });
+    if (city_empty) {
+        document.getElementById('current-city').innerHTML = `Current City Filter: (none)`;
+    }
+}
+
+function generate_city_list(content) {
+    let cities = gather_cities(content);
+    cities.forEach((city) => {
+        document.getElementById("city-menu").innerHTML += `<a class="dropdown-item" href="#${string_to_slug(city)}">${city}</a>`
+    });
+}
+
 function publish_row(row) {
     if (row) {
-        document.getElementById("content").innerHTML += `<div class="col-auto m-0 p-0"><iframe class="embed-responsive-16by9 ${string_to_slug(row["City"])} ${string_to_slug(row["State"])}" src="${row["Embed Link"]}"></iframe><p class="source">${row["Source"]} - ${row["City"]}, ${row["State"]}</p></div><br />`;
+        document.getElementById("content").innerHTML += `<div class="col-3 embed-responsive embed-responsive-16by9 m-0 p-0"><iframe class="embed-responsive-item ${string_to_slug(row["City"])} ${string_to_slug(row["State"])}" src="${row["Embed Link"]}"></iframe><p class="source">${row["Source"]} - ${row["City"]}, ${row["State"]}</p></div><br />`;
     }
 }
 
@@ -116,13 +132,6 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchChart(SOURCE_URL).then(doParse).then(update);
 });
 
-/*<div class="dropdown">
-  <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-    Dropdown button
-  </button>
-  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-    <a class="dropdown-item" href="#">Action</a>
-    <a class="dropdown-item" href="#">Another action</a>
-    <a class="dropdown-item" href="#">Something else here</a>
-  </div>
-</div>*/
+window.addEventListener('popstate', () => {
+    fetchChart(SOURCE_URL).then(doParse).then(update);
+});
