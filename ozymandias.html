@@ -3,12 +3,28 @@
 <head>
     <link rel="stylesheet" href="css/bootstrap.css">
     <link rel="stylesheet" href="css/main.css">
+    <script src="js/poppper.min.js"></script>
+    <script src="js/bootstrap.js"></script>
     <script src="js/main.js" ></script>
     <meta charset="UTF-8">
-    <title>Just me and the world</title>
+    <title>Just Me and the World</title>
 </head>
 <body>
-<div class="no-gutters"><div id="ui"><div id="city"></div></div><div id="content" class="row"></div></div>
+<nav id="ui" class="navbar navbar-expand-lg navbar-light bg-light">
+    <div id="city mx-3" class="navbar-nav">
+        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Filter By City</button>
+        <div id="city-menu" class="dropdown-menu" aria-labelledby="dropdownMenuButton"></div>
+    </div>
+    <div id='current-city' class='navbar-text mx-3'></div>
+    <div id='links' class="navbar-collapse">
+        <ul class="navbar-nav mr-auto">
+            <li><a class="nav-item mx-5" href="https://woke.net">Curated stream - woke.net</a></li>
+            <li><a class="nav-item mx-5" href="https://bit.ly/protestlink">Source Data</a></li>
+            <li><a class="nav-item mx-5" href="https://bit.ly/protestform">Submit Livestreams</a></li>
+        </ul>
+    </div>
+</nav>
+<div id="content" class="row"></div>
 <footer>Built to help document the Police Brutality Protests of 2020. This site requires JavaScript as it is dynamically updating a list of streams from a community-run Google Sheet.</footer>
 </body>
 </html>
