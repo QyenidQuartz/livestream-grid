@@ -55,7 +55,6 @@ function filter_online_streams(row) {
 
 function woke_filter(row) {
     if (row) {
-
         if (row["Source"] === "Woke" || row["Source"] === "Submit links:") {
 
         } else {
@@ -80,7 +79,7 @@ function city_filter(row) {
     let city = window.location.hash.substring(1)
     if (row) {
         if (city) {
-            if (string_to_slug(row["City"]) === city) {
+            if (generate_city_state_slug(row["City"], row["State"]) === city) {
                 return row
             }
         } else {
@@ -91,11 +90,10 @@ function city_filter(row) {
 
 function gather_cities(content) {
     let cities;
-    console.log("gather_cities");
     cities = [];
     content.forEach((row) => {
         if (filter_online_streams(row)) {
-            cities.push(row["City"])
+            cities.push(row["City"] + ', ' + row["State"])
         }
     });
     return new Set(cities)
@@ -104,18 +102,23 @@ function gather_cities(content) {
 function generate_current_city(content) {
     let city_empty = true
     content.forEach((row) => {
-        if (window.location.hash.substring(1) === string_to_slug(row["City"])) {
-            document.getElementById('current-city').innerHTML = `Current City Filter: ${row["City"]}`
+        if (window.location.hash.substring(1) === generate_city_state_slug(row["City"], row["State"])) {
+            document.getElementById('current-city').innerHTML = `Selected City: ${row["City"]}, ${row["State"]}`
             city_empty = false
         }
 
     });
     if (city_empty) {
-        document.getElementById('current-city').innerHTML = `Current City Filter: (none)`;
+        document.getElementById('current-city').innerHTML = `Selected City: (none)`;
     }
 }
 
+function generate_city_state_slug(city, state) {
+    return string_to_slug(city + ', ' + state)
+}
+
 function generate_city_list(content) {
+    document.getElementById("city-menu").innerHTML = `<a class="dropdown-item" href="#">(none)</a>`;
     let cities = gather_cities(content);
     cities.forEach((city) => {
         document.getElementById("city-menu").innerHTML += `<a class="dropdown-item" href="#${string_to_slug(city)}">${city}</a>`
